@@ -172,6 +172,10 @@ fun test_settle() {
     debt_out.destroy_zero();
     assert!(credit_left.is_none());
     credit_left.destroy_none();
+
+    let (credit, debt) = new<SUI>(100);
+    credit.destroy_for_testing();
+    debt.destroy_for_testing();
 }
 
 #[test, expected_failure(abort_code = EDestroyNonZeroCredit)]

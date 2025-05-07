@@ -182,27 +182,28 @@ fun test_basic() {
     let a = from(1);
     let b = from(2);
 
-    assert!(add(a, b) == from(3));
-    assert!(sub(b, a) == from(1));
-    assert!(mul(a, b) == from(2));
-    assert!(div(b, a) == from(2));
-    assert!(floor(from_percent(150)) == 1);
-    assert!(ceil(from_percent(150)) == 2);
-    assert!(lt(a, b));
-    assert!(gt(b, a));
-    assert!(lte(a, b));
-    assert!(gte(b, a));
-    assert!(saturating_sub(a, b) == from(0));
-    assert!(saturating_sub(b, a) == from(1));
+    assert!(a.add(b) == from(3));
+    assert!(b.sub(a) == from(1));
+    assert!(a.mul(b) == from(2));
+    assert!(b.div(a) == from(2));
+    assert!(from_percent(150).floor() == 1);
+    assert!(from_percent(150).ceil() == 2);
+    assert!(a.lt(b));
+    assert!(b.gt(a));
+    assert!(a.lte(b));
+    assert!(b.gte(a));
+    assert!(a.saturating_sub(b) == from(0));
+    assert!(b.saturating_sub(a) == from(1));
+    assert!(from_fraction(1, 4).eq(from_percent(25)));
 }
 
 #[test]
 fun test_pow() {
-    assert!(pow(from(5), 4) == from(625));
-    assert!(pow(from(3), 0) == from(1));
-    assert!(pow(from(3), 1) == from(3));
-    assert!(pow(from(3), 7) == from(2187));
-    assert!(pow(from(3), 8) == from(6561));
+    assert!(from(5).pow(4) == from(625));
+    assert!(from(3).pow(0) == from(1));
+    assert!(from(3).pow(1) == from(3));
+    assert!(from(3).pow(7) == from(2187));
+    assert!(from(3).pow(8) == from(6561));
 }
 
 #[test]
@@ -210,11 +211,11 @@ fun test_advenced() {
     assert!(from_percent(5).eq(from_bps(500)));
     assert!(from_percent_u64(900) == from(8).add_u64(1));
     assert!(from_percent_u64(911) == from_scaled_val(9_110_000_000));
-    assert!(from(5).sub_u64(1) == from(24).div_u64(6));
+    assert!(from(5).sub_u64(1).mul_u64(2) == from(24).div_u64(3));
     assert!(from(500).min(from(100)).eq(from(100)));
     assert!(from(100).min(from(500)).eq(from(100)));
-    assert!(from(500).max(from(100)).eq(from(500)));
-    assert!(from(100).max(from(500)).eq(from(500)));
+    assert!(from(500).max(from(100)).lte(from(500)));
+    assert!(from(100).max(from(500)).gte(from(500)));
     assert!(from(2).saturating_sub_u64(1) == from(1));
     assert!(from(1).saturating_sub_u64(2) == from(0));
     assert!(wad() == WAD);

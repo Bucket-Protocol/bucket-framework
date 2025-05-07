@@ -75,6 +75,14 @@ public fun collect(treasury: &mut TreasuryC, collector: Request<SUI, C>) {
     treasury.balance.join(repayment);
 }
 
+public fun ban<E>(treasury: &mut TreasuryC) {
+    treasury.sheet.ban(sheet::entity<E>(), C {});
+}
+
+public fun unban<E>(treasury: &mut TreasuryC) {
+    treasury.sheet.unban(sheet::entity<E>(), C {});
+}
+
 public fun balance(treasury: &TreasuryC): u64 {
     treasury.balance.value()
 }

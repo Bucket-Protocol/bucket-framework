@@ -5,6 +5,7 @@ module bucket_framework::sheet;
 use std::type_name::{get, TypeName};
 use sui::balance::{Self, Balance};
 use sui::vec_map::{Self, VecMap};
+use sui::vec_set::{Self, VecSet};
 use bucket_framework::liability::{Self, Credit, Debt};
 
 /// Structs
@@ -14,6 +15,7 @@ public struct Entity(TypeName) has copy, drop, store;
 public struct Sheet<phantom CoinType, phantom SelfEntity: drop> has store {
     credits: VecMap<Entity, Credit<CoinType>>,
     debts: VecMap<Entity, Debt<CoinType>>,
+    blacklist: VecSet<Entity>,
 }
 
 // Hot potato
@@ -31,14 +33,14 @@ public struct Request<phantom CoinType, phantom Collector> {
 
 // Errors
 
-const EInvalidEntity: u64 = 0;
-fun err_invalid_entity() { abort EInvalidEntity }
+const EInvalidEntityForDebt: u64 = 0;
+fun err_invalid_entity_for_debt() { abort EInvalidEntityForDebt }
 
-const ENotEnoughRepayment: u64 = 2;
-fun err_not_enough_repayment() { abort ENotEnoughRepayment }
+const EInvalidEntityForCredit: u64 = 1;
+fun err_invalid_entity_for_credit() { abort EInvalidEntityForCredit }
 
-const ERepayTooMuch: u64 = 3;
-fun err_repay_too_much() { abort ERepayTooMuch }
+const EPayTooMuch: u64 = 2;
+fun err_pay_too_much() { abort EPayTooMuch }
 
 // Public Funs
 
@@ -46,6 +48,7 @@ public fun new<T, E: drop>(_: E): Sheet<T, E> {
     Sheet<T, E> {
         credits: vec_map::empty(),
         debts: vec_map::empty(),
+        blacklist: vec_set::empty(),
     }
 }
 
@@ -101,7 +104,7 @@ public fun pay<T, C, P: drop>(
 ) {
     let balance_value = balance.value();
     if (balance_value > req.shortage()) {
-        err_repay_too_much();
+        err_pay_too_much();
     };
     req.balance.join(balance);
     let (credit, debt) = liability::new(balance_value);
@@ -125,10 +128,7 @@ public fun collect<T, C: drop>(
     req: Request<T, C>,
     _stamp: C,
 ): Balance<T> {
-    let Request { requirement, balance, mut payor_debts } = req;
-    if (requirement != balance.value()) {
-        err_not_enough_repayment();
-    };
+    let Request { requirement: _, balance, mut payor_debts } = req;
     while (!payor_debts.is_empty()) {
         let (payor, debt) = payor_debts.pop();
         let debt_opt = sheet.credit_against(payor).settle(debt);
@@ -141,8 +141,6 @@ public fun collect<T, C: drop>(
     payor_debts.destroy_empty();
     balance
 }
-
-public fun entity<E>(): Entity { Entity(get<E>()) }
 
 public fun add_debtor<T, E: drop>(
     sheet: &mut Sheet<T, E>,
@@ -168,31 +166,29 @@ public fun add_creditor<T, E: drop>(
     };
 }
 
-public fun remove_debtor<T, E: drop>(
+public fun ban<T, E: drop>(
     sheet: &mut Sheet<T, E>,
-    debtor: Entity,
+    entity: Entity,
     _stamp: E,
-): Credit<T> {
-    if (!sheet.credits.contains(&debtor)) {
-        err_invalid_entity();
+) {
+    if (!sheet.blacklist.contains(&entity)) {
+        sheet.blacklist.insert(entity);
     };
-    let (_, credit) = sheet.credits.remove(&debtor);
-    credit
 }
 
-public fun remove_creditor<T, E: drop>(
+public fun unban<T, E: drop>(
     sheet: &mut Sheet<T, E>,
-    creditor: Entity,
+    entity: Entity,
     _stamp: E,
-): Debt<T> {
-    if (!sheet.debts.contains(&creditor)) {
-        err_invalid_entity();
-    };
-    let (_, debt) = sheet.debts.remove(&creditor);
-    debt
+) {
+    if (sheet.blacklist.contains(&entity)) {
+        sheet.blacklist.remove(&entity);
+    };   
 }
 
 // Getter Funs
+
+public fun entity<E>(): Entity { Entity(get<E>()) }
 
 public fun credits<T, E: drop>(sheet: &Sheet<T, E>): &VecMap<Entity, Credit<T>> {
     &sheet.credits
@@ -200,6 +196,10 @@ public fun credits<T, E: drop>(sheet: &Sheet<T, E>): &VecMap<Entity, Credit<T>> 
 
 public fun debts<T, E: drop>(sheet: &Sheet<T, E>): &VecMap<Entity, Debt<T>> {
     &sheet.debts
+}
+
+public fun blacklist<T, E: drop>(sheet: &Sheet<T, E>): &VecSet<Entity> {
+    &sheet.blacklist
 }
 
 public fun total_credit<T, E: drop>(sheet: &Sheet<T, E>): u64 {
@@ -237,8 +237,10 @@ fun debt_against<T, S: drop>(
     sheet: &mut Sheet<T, S>,
     entity: Entity,
 ): &mut Debt<T> {
-    if (!sheet.debts().contains(&entity)) {
-        err_invalid_entity();
+    if (!sheet.debts().contains(&entity) ||
+        sheet.blacklist().contains(&entity)
+    ) {
+        err_invalid_entity_for_debt();
     };
     sheet.debts.get_mut(&entity)
 }
@@ -247,8 +249,10 @@ fun credit_against<T, S: drop>(
     sheet: &mut Sheet<T, S>,
     entity: Entity,
 ): &mut Credit<T> {
-    if (!sheet.credits().contains(&entity)) {
-        err_invalid_entity();
+    if (!sheet.credits().contains(&entity) ||
+        sheet.blacklist().contains(&entity)
+    ) {
+        err_invalid_entity_for_credit();
     };
     sheet.credits.get_mut(&entity)
 }

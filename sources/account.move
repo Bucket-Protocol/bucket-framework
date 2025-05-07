@@ -95,6 +95,8 @@ fun test_account_request() {
     s.next_tx(sender);
     let account = s.take_from_sender<Account>();
     assert!(account.address() == account_id.to_address());
+    let acc_req = account.request();
+    assert!(acc_req.address() == account_id.to_address());
     s.return_to_sender(account);
 
     scenario.end();
