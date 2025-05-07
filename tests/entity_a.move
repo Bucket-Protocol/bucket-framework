@@ -58,14 +58,15 @@ public fun receive<From>(
 
 public fun pay<Collector>(
     treasury: &mut TreasuryA,
-    collector: &mut Request<SUI, Collector>,
+    req: &mut Request<SUI, Collector>,
     amount: u64,
 ) {
     let repayment = treasury.balance.split(amount);
-    treasury.sheet.pay(collector, repayment, A {});
+    treasury.sheet.pay(req, repayment, A {});
 }
 
-public fun request(requirement: u64): Request<SUI, A> {
+public fun request(treasury: &TreasuryA, requirement: u64): Request<SUI, A> {
+    assert!(requirement <= treasury.sheet().total_credit());
     sheet::request(requirement, A {})
 }
 

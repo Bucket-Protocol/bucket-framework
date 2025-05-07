@@ -202,6 +202,14 @@ public fun debts<T, E: drop>(sheet: &Sheet<T, E>): &VecMap<Entity, Debt<T>> {
     &sheet.debts
 }
 
+public fun total_credit<T, E: drop>(sheet: &Sheet<T, E>): u64 {
+    sheet.credits().keys().map_ref!(|e| sheet.credits().get(e).value()).fold!(0, |x, y| x + y)
+}
+
+public fun total_debt<T, E: drop>(sheet: &Sheet<T, E>): u64 {
+    sheet.debts().keys().map_ref!(|e| sheet.debts().get(e).value()).fold!(0, |x, y| x + y)
+}
+
 public use fun loan_value as Loan.value;
 public fun loan_value<T, C, D>(loan: &Loan<C, D, T>): u64 {
     loan.balance.value()
@@ -211,12 +219,12 @@ public fun requirement<T, C>(req: &Request<T, C>): u64 {
     req.requirement
 }
 
-public fun repayment<T, C>(req: &Request<T, C>): u64 {
+public fun balance<T, C>(req: &Request<T, C>): u64 {
     req.balance.value()
 }
 
 public fun shortage<T, C>(req: &Request<T, C>): u64 {
-    req.requirement() - req.repayment()
+    req.requirement() - req.balance()
 }
 
 public fun payor_debts<T, C>(req: &Request<T, C>): &VecMap<Entity, Debt<T>> {
