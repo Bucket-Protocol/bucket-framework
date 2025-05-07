@@ -20,6 +20,14 @@ public struct Double has copy, store, drop {
 
 /// Public Funs
 
+public fun zero(): Double {
+    Double { value: 0 }
+}
+
+public fun one(): Double {
+    Double { value: WAD }
+}
+
 public fun from(v: u64): Double {
     Double {
         value: (v as u256) * WAD
@@ -192,9 +200,10 @@ fun test_basic() {
     assert!(b.gt(a));
     assert!(a.lte(b));
     assert!(b.gte(a));
-    assert!(a.saturating_sub(b) == from(0));
-    assert!(b.saturating_sub(a) == from(1));
+    assert!(a.saturating_sub(b) == zero());
+    assert!(b.saturating_sub(a) == one());
     assert!(from_fraction(1, 4).eq(from_percent(25)));
+    assert!(from_scaled_val(wad()).eq(one()));
 }
 
 #[test]
@@ -218,7 +227,6 @@ fun test_advenced() {
     assert!(from(100).max(from(500)).gte(from(500)));
     assert!(from(2).saturating_sub_u64(1) == from(1));
     assert!(from(1).saturating_sub_u64(2) == from(0));
-    assert!(wad() == WAD);
 }
 
 #[test, expected_failure(abort_code = EDividedByZero)]
