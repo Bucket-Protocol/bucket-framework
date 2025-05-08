@@ -143,12 +143,16 @@ public fun pow(b: Float, mut e: u64): Float {
     result
 }
 
-public fun floor(a: Float): u64 {
-    ((a.value / WAD) as u64)
+public fun floor(v: Float): u64 {
+    ((v.value / WAD) as u64)
 }
 
-public fun ceil(a: Float): u64 {
-    (((a.value + WAD - 1) / WAD) as u64)
+public fun ceil(v: Float): u64 {
+    (((v.value + WAD - 1) / WAD) as u64)
+}
+
+public fun round(v: Float): u64 {
+    (((v.value + WAD / 2 - 1) / WAD) as u64)
 }
 
 public fun eq(a: Float, b: Float): bool {
@@ -233,6 +237,9 @@ fun test_advenced() {
     assert!(from(100).max(from(500)).gte(from(500)));
     assert!(from(2).saturating_sub_u64(1) == from(1));
     assert!(from(1).saturating_sub_u64(2) == from(0));
+    assert!(from_percent(149).round() == 1);
+    assert!(from_percent(150).round() == 1);
+    assert!(from_percent(151).round() == 2);
 }
 
 #[test, expected_failure(abort_code = EDividedByZero)]

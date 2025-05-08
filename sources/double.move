@@ -140,12 +140,16 @@ public fun pow(b: Double, mut e: u64): Double {
     result
 }
 
-public fun floor(a: Double): u64 {
-    ((a.value / WAD) as u64)
+public fun floor(v: Double): u64 {
+    ((v.value / WAD) as u64)
 }
 
-public fun ceil(a: Double): u64 {
-    (((a.value + WAD - 1) / WAD) as u64)
+public fun ceil(v: Double): u64 {
+    (((v.value + WAD - 1) / WAD) as u64)
+}
+
+public fun round(v: Double): u64 {
+    (((v.value + WAD / 2 - 1) / WAD) as u64)
 }
 
 public fun eq(a: Double, b: Double): bool {
@@ -231,6 +235,9 @@ fun test_advenced() {
     assert!(float::from_percent(12).into_double() == from_bps(1200));
     assert!(ten().pow(30).try_into_float().is_none());
     assert!(ten().pow(29).try_into_float().destroy_some() == float::from_scaled_val(std::u128::pow(10, 29 + 9)));
+    assert!(from_percent(249).round() == 2);
+    assert!(from_percent(250).round() == 2);
+    assert!(from_percent(251).round() == 3);
 }
 
 #[test, expected_failure(abort_code = EDividedByZero)]
