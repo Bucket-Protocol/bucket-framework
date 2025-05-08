@@ -3,7 +3,7 @@ module bucket_framework::entity_a;
 
 use sui::sui::{SUI};
 use sui::balance::{Self, Balance};
-use bucket_framework::sheet::{Self, Sheet, Loan, Request};
+use bucket_framework::sheet::{Self, Entity, Sheet, Loan, Request};
 
 // Witness
 
@@ -65,9 +65,13 @@ public fun pay<Collector>(
     treasury.sheet.pay(req, repayment, A {});
 }
 
-public fun request(treasury: &TreasuryA, requirement: u64): Request<SUI, A> {
+public fun request(
+    treasury: &TreasuryA,
+    requirement: u64,
+    checklist: Option<vector<Entity>>,
+): Request<SUI, A> {
     assert!(requirement <= treasury.sheet().total_credit());
-    sheet::request(requirement, A {})
+    sheet::request(requirement, checklist, A {})
 }
 
 public fun collect(treasury: &mut TreasuryA, collector: Request<SUI, A>) {

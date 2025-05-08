@@ -24,6 +24,14 @@ public fun new<T>(value: u64): (Credit<T>, Debt<T>) {
     (Credit { value }, Debt { value })
 }
 
+public fun zero_credit<T>(): Credit<T> {
+    Credit<T> { value: 0 }
+}
+
+public fun zero_debt<T>(): Debt<T> {
+    Debt<T> { value: 0 }
+}
+
 public use fun destroy_zero_credit as Credit.destroy_zero;
 public fun destroy_zero_credit<T>(credit: Credit<T>) {
     let Credit { value } = credit;
@@ -173,7 +181,9 @@ fun test_settle() {
     assert!(credit_left.is_none());
     credit_left.destroy_none();
 
-    let (credit, debt) = new<SUI>(100);
+    let (mut credit, mut debt) = new<SUI>(100);
+    assert!(credit.add(zero_credit()) == 100);
+    assert!(debt.add(zero_debt()) == 100);
     credit.destroy_for_testing();
     debt.destroy_for_testing();
 }

@@ -4,11 +4,10 @@ module bucket_framework::test_sheet;
 use sui::balance;
 use sui::sui::{SUI};
 use sui::test_scenario::{Self as ts, Scenario};
-use bucket_framework::sheet::{entity};
+use bucket_framework::sheet::{Self, entity};
 use bucket_framework::entity_a::{Self, A, TreasuryA};
 use bucket_framework::entity_b::{Self, B, TreasuryB};
 use bucket_framework::entity_c::{Self, C, TreasuryC};
-use bucket_framework::sheet;
 
 public fun dummy(): address { @0xcafe }
 
@@ -91,7 +90,11 @@ fun test_sheet() {
     treasury_c.add_debtor<A>();
     treasury_c.add_creditor<A>();
 
-    let mut request = treasury_a.request(b_pay_amount + c_pay_amount);
+    let mut request = treasury_a.request(
+        b_pay_amount + c_pay_amount,
+        // option::some(vector[entity<B>(), entity<C>()]),
+        option::none(),
+    );
     treasury_b.pay(&mut request, b_pay_amount);
     treasury_c.pay(&mut request, c_pay_amount / 4);
     treasury_c.pay(&mut request, c_pay_amount * 3 / 4);
@@ -191,7 +194,7 @@ fun test_pay_too_much() {
     s.next_tx(dummy());
     let mut treasury_a = s.take_shared<TreasuryA>();
     let mut treasury_b = s.take_shared<TreasuryB>();
-    let mut request = treasury_a.request(a_loan_amount / 2);
+    let mut request = treasury_a.request(a_loan_amount / 2, option::none());
     treasury_b.pay(&mut request, a_loan_amount);
     treasury_a.collect(request);
     ts::return_shared(treasury_a);

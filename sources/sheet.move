@@ -28,6 +28,7 @@ public struct Loan<phantom CoinType, phantom Lender, phantom Receiver> {
 public struct Request<phantom CoinType, phantom Collector> {
     requirement: u64,
     balance: Balance<CoinType>,
+    checklist: Option<vector<Entity>>,
     payor_debts: VecMap<Entity, Debt<CoinType>>,
 }
 
@@ -41,6 +42,9 @@ fun err_invalid_entity_for_credit() { abort EInvalidEntityForCredit }
 
 const EPayTooMuch: u64 = 2;
 fun err_pay_too_much() { abort EPayTooMuch }
+
+const EChecklistNotFulfill: u64 = 3;
+fun err_checklist_not_fulfill() { abort EChecklistNotFulfill }
 
 // Public Funs
 
@@ -87,11 +91,13 @@ public fun receive<T, L, R: drop>(
 
 public fun request<T, C: drop>(
     requirement: u64,
+    checklist: Option<vector<Entity>>,
     _collector_stamp: C,
 ): Request<T, C> {
     Request {
         requirement,
         balance: balance::zero(),
+        checklist,
         payor_debts: vec_map::empty(),
     }
 }
@@ -128,7 +134,12 @@ public fun collect<T, C: drop>(
     req: Request<T, C>,
     _stamp: C,
 ): Balance<T> {
-    let Request { requirement: _, balance, mut payor_debts } = req;
+    let Request { requirement: _, checklist, balance, mut payor_debts } = req;
+    if (checklist.is_some() &&
+        checklist.destroy_some() != payor_debts.keys()
+    ) {
+        err_checklist_not_fulfill();
+    };
     while (!payor_debts.is_empty()) {
         let (payor, debt) = payor_debts.pop();
         let debt_opt = sheet.credit_against(payor).settle(debt);
@@ -148,9 +159,7 @@ public fun add_debtor<T, E: drop>(
     _stamp: E,
 ) {
     if (!sheet.credits().contains(&debtor)) {
-        let (zero_credit, zero_debt) = liability::new(0);
-        zero_debt.destroy_zero();
-        sheet.credits.insert(debtor, zero_credit);    
+        sheet.credits.insert(debtor, liability::zero_credit());
     };
 }
 
@@ -160,9 +169,7 @@ public fun add_creditor<T, E: drop>(
     _stamp: E,
 ) {
     if (!sheet.debts().contains(&creditor)) {
-        let (zero_credit, zero_debt) = liability::new(0);
-        zero_credit.destroy_zero();
-        sheet.debts.insert(creditor, zero_debt);
+        sheet.debts.insert(creditor, liability::zero_debt());
     };
 }
 
