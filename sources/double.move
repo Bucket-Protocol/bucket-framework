@@ -149,7 +149,7 @@ public fun ceil(v: Double): u64 {
 }
 
 public fun round(v: Double): u64 {
-    (((v.value + WAD / 2 - 1) / WAD) as u64)
+    (((v.value + WAD / 2) / WAD) as u64)
 }
 
 public fun eq(a: Double, b: Double): bool {
