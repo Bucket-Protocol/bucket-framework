@@ -28,6 +28,10 @@ public fun one(): Float {
     Float { value: WAD }
 }
 
+public fun ten(): Float {
+    from(10)
+}
+
 public fun from(v: u64): Float {
     Float {
         value: (v as u128) * WAD
@@ -185,6 +189,8 @@ public fun max(a: Float, b: Float): Float {
 
 public fun wad(): u128 { WAD }
 
+public use fun bucket_framework::double::from_float as Float.into_double;
+
 #[test]
 fun test_basic() {
     let a = from(1);
@@ -221,7 +227,7 @@ fun test_advenced() {
     assert!(from_percent_u64(900) == from(8).add_u64(1));
     assert!(from_percent_u64(911) == from_scaled_val(9_110_000_000));
     assert!(from(5).sub_u64(1).mul_u64(2) == from(24).div_u64(3));
-    assert!(from(500).min(from(100)).eq(from(100)));
+    assert!(from(500).min(from(100)).eq(ten().pow(2)));
     assert!(from(100).min(from(500)).eq(from(100)));
     assert!(from(500).max(from(100)).lte(from(500)));
     assert!(from(100).max(from(500)).gte(from(500)));

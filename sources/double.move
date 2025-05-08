@@ -1,5 +1,7 @@
 module bucket_framework::double;
 
+use bucket_framework::float::{Self, Float};
+
 /// Errors
 
 const EDividedByZero: u64 = 0;
@@ -28,58 +30,61 @@ public fun one(): Double {
     Double { value: WAD }
 }
 
+public fun ten(): Double {
+    from(10)
+}
+
 public fun from(v: u64): Double {
-    Double {
-        value: (v as u256) * WAD
-    }
+    Double { value: (v as u256) * WAD }
 }
 
 public fun from_percent(v: u8): Double {
-    Double {
-        value: (v as u256) * WAD / 100
-    }
+    Double { value: (v as u256) * WAD / 100 }
 }
 
 public fun from_percent_u64(v: u64): Double {
-    Double {
-        value: (v as u256) * WAD / 100
-    }
+    Double { value: (v as u256) * WAD / 100 }
 }
 
 public fun from_bps(v: u64): Double {
-    Double {
-        value: (v as u256) * WAD / 10_000
-    }
+    Double { value: (v as u256) * WAD / 10_000 }
 }
 
 public fun from_fraction(n: u64, m: u64): Double {
     if (m == 0) err_divided_by_zero();
-    Double {
-        value: (n as u256) * WAD / (m as u256)
-    }
+    Double { value: (n as u256) * WAD / (m as u256) }
 }
 
 public fun from_scaled_val(v: u256): Double {
-    Double {
-        value: v
-    }
+    Double { value: v }
+}
+
+public fun from_float(f: Float): Double {
+    let wad_diff = WAD / (float::wad() as u256);
+    Double { value: (f.to_scaled_val() as u256) * wad_diff }
 }
 
 public fun to_scaled_val(v: Double): u256 {
     v.value
 }
 
-public fun add(a: Double, b: Double): Double {
-    Double {
-        value: a.value + b.value
+public fun try_into_float(v: Double): Option<Float> { // WARING: downscaling will lose precision
+    let wad_diff = WAD / (float::wad() as u256);
+    let new_value = v.value / wad_diff;
+    if (new_value <= (std::u128::max_value!() as u256)) {
+        option::some(float::from_scaled_val(new_value as u128))
+    } else {
+        option::none()
     }
+}
+
+public fun add(a: Double, b: Double): Double {
+    Double { value: a.value + b.value }
 }
 
 public fun sub(a: Double, b: Double): Double {
     if (b.value > a.value) err_subtrahend_too_large();
-    Double {
-        value: a.value - b.value
-    }
+    Double { value: a.value - b.value }
 }
 
 public fun saturating_sub(a: Double, b: Double): Double {
@@ -91,17 +96,13 @@ public fun saturating_sub(a: Double, b: Double): Double {
 }
 
 public fun mul(a: Double, b: Double): Double {
-    Double {
-        value: (a.value * b.value) / WAD
-    }
+    Double { value: (a.value * b.value) / WAD }
 }
 
 
 public fun div(a: Double, b: Double): Double {
     if (b.to_scaled_val() == 0) err_divided_by_zero();
-    Double {
-        value: (a.value * WAD) / b.value
-    }
+    Double { value: (a.value * WAD) / b.value }
 }
 
 public fun add_u64(a: Double, b: u64): Double {
@@ -227,6 +228,9 @@ fun test_advenced() {
     assert!(from(100).max(from(500)).gte(from(500)));
     assert!(from(2).saturating_sub_u64(1) == from(1));
     assert!(from(1).saturating_sub_u64(2) == from(0));
+    assert!(float::from_percent(12).into_double() == from_bps(1200));
+    assert!(ten().pow(30).try_into_float().is_none());
+    assert!(ten().pow(29).try_into_float().destroy_some() == float::from_scaled_val(std::u128::pow(10, 29 + 9)));
 }
 
 #[test, expected_failure(abort_code = EDividedByZero)]
