@@ -1,4 +1,4 @@
-module bucket_framework::liability;
+module bucket_tool::liability;
 
 /// Errors
 

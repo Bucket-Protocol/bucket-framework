@@ -1,9 +1,9 @@
 #[test_only]
-module bucket_framework::entity_a;
+module bucket_tool::entity_a;
 
 use sui::sui::{SUI};
 use sui::balance::{Self, Balance};
-use bucket_framework::sheet::{Self, Entity, Sheet, Loan, Request};
+use bucket_tool::sheet::{Self, Entity, Sheet, Loan, Request};
 
 // Witness
 

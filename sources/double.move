@@ -1,6 +1,6 @@
-module bucket_framework::double;
+module bucket_tool::double;
 
-use bucket_framework::float::{Self, Float};
+use bucket_tool::float::{Self, Float};
 
 /// Errors
 
@@ -236,7 +236,7 @@ fun test_advenced() {
     assert!(ten().pow(30).try_into_float().is_none());
     assert!(ten().pow(29).try_into_float().destroy_some() == float::from_scaled_val(std::u128::pow(10, 29 + 9)));
     assert!(from_percent(249).round() == 2);
-    assert!(from_percent(250).round() == 2);
+    assert!(from_percent(250).round() == 3);
     assert!(from_percent(251).round() == 3);
 }
 

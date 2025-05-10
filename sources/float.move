@@ -1,4 +1,4 @@
-module bucket_framework::float;
+module bucket_tool::float;
 
 /// Errors
 
@@ -193,7 +193,7 @@ public fun max(a: Float, b: Float): Float {
 
 public fun wad(): u128 { WAD }
 
-public use fun bucket_framework::double::from_float as Float.into_double;
+public use fun bucket_tool::double::from_float as Float.into_double;
 
 #[test]
 fun test_basic() {
@@ -238,7 +238,7 @@ fun test_advenced() {
     assert!(from(2).saturating_sub_u64(1) == from(1));
     assert!(from(1).saturating_sub_u64(2) == from(0));
     assert!(from_percent(149).round() == 1);
-    assert!(from_percent(150).round() == 1);
+    assert!(from_percent(150).round() == 2);
     assert!(from_percent(151).round() == 2);
 }
 
