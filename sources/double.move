@@ -1,6 +1,6 @@
-module bucket_tool::double;
+module bucket_tools::double;
 
-use bucket_tool::float::{Self, Float};
+use bucket_tools::float::{Self, Float};
 
 /// Errors
 

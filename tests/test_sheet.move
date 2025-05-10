@@ -1,13 +1,13 @@
 #[test_only]
-module bucket_tool::test_sheet;
+module bucket_tools::test_sheet;
 
 use sui::balance;
 use sui::sui::{SUI};
 use sui::test_scenario::{Self as ts, Scenario};
-use bucket_tool::sheet::{Self, entity};
-use bucket_tool::entity_a::{Self, A, TreasuryA};
-use bucket_tool::entity_b::{Self, B, TreasuryB};
-use bucket_tool::entity_c::{Self, C, TreasuryC};
+use bucket_tools::sheet::{Self, entity};
+use bucket_tools::entity_a::{Self, A, TreasuryA};
+use bucket_tools::entity_b::{Self, B, TreasuryB};
+use bucket_tools::entity_c::{Self, C, TreasuryC};
 
 public fun dummy(): address { @0xcafe }
 

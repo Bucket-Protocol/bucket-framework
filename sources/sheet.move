@@ -1,4 +1,4 @@
-module bucket_tool::sheet;
+module bucket_tools::sheet;
 
 /// Dependencies
 
@@ -6,7 +6,7 @@ use std::type_name::{get, TypeName};
 use sui::balance::{Self, Balance};
 use sui::vec_map::{Self, VecMap};
 use sui::vec_set::{Self, VecSet};
-use bucket_tool::liability::{Self, Credit, Debt};
+use bucket_tools::liability::{Self, Credit, Debt};
 
 /// Structs
 

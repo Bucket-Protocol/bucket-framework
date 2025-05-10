@@ -1,4 +1,4 @@
-module bucket_tool::float;
+module bucket_tools::float;
 
 /// Errors
 
@@ -193,7 +193,7 @@ public fun max(a: Float, b: Float): Float {
 
 public fun wad(): u128 { WAD }
 
-public use fun bucket_tool::double::from_float as Float.into_double;
+public use fun bucket_tools::double::from_float as Float.into_double;
 
 #[test]
 fun test_basic() {

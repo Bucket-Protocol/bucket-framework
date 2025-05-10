@@ -1,4 +1,4 @@
-module bucket_tool::account;
+module bucket_tools::account;
 
 /// Dependencies
 
